@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * AskYourWallet design tokens.
+ *
+ * Every colour traces back to the three in the logo:
+ *   #0F3D2E deep forest green  -> hsl(160 60% 15%)  brand / primary
+ *   #F5F0E6 warm cream         -> hsl(40 43% 95%)   light surfaces / text on green
+ *   #D8A439 amber              -> hsl(40 67% 54%)   the single accent
+ * Dark is the default theme; the light block is the alternate.
+ */
+@layer base {
+  :root {
+    --background: 40 43% 95%;
+    --foreground: 162 30% 12%;
+
+    --card: 40 45% 98%;
+    --card-foreground: 162 30% 12%;
+    --popover: 40 45% 98%;
+    --popover-foreground: 162 30% 12%;
+
+    --primary: 160 60% 15%;
+    --primary-foreground: 40 43% 95%;
+    --secondary: 40 28% 90%;
+    --secondary-foreground: 162 30% 14%;
+    --muted: 40 25% 89%;
+    --muted-foreground: 160 12% 38%;
+    --accent: 40 67% 50%;
+    --accent-foreground: 160 60% 12%;
+    --destructive: 6 62% 45%;
+    --destructive-foreground: 40 43% 96%;
+
+    --border: 40 20% 84%;
+    --input: 40 20% 80%;
+    --ring: 160 45% 25%;
+
+    --brand: 160 60% 15%;
+    --brand-foreground: 40 43% 95%;
+
+    /* The sidebar stays forest green in both themes — it is the brand surface. */
+    --sidebar: 160 60% 12%;
+    --sidebar-foreground: 40 30% 88%;
+    --sidebar-border: 160 35% 20%;
+    --sidebar-accent: 160 40% 20%;
+
+    --positive: 152 50% 32%;
+    --negative: 6 62% 45%;
+    --warning: 38 72% 40%;
+    --critical: 6 62% 45%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 162 24% 8%;
+    --foreground: 40 30% 92%;
+
+    --card: 162 22% 11%;
+    --card-foreground: 40 30% 92%;
+    --popover: 162 24% 10%;
+    --popover-foreground: 40 30% 92%;
+
+    --primary: 157 40% 40%;
+    --primary-foreground: 160 45% 7%;
+    --secondary: 160 14% 17%;
+    --secondary-foreground: 40 30% 90%;
+    --muted: 160 14% 16%;
+    --muted-foreground: 150 8% 62%;
+    --accent: 40 67% 54%;
+    --accent-foreground: 160 45% 9%;
+    --destructive: 6 58% 48%;
+    --destructive-foreground: 40 30% 94%;
+
+    --border: 160 13% 19%;
+    --input: 160 13% 22%;
+    --ring: 157 40% 45%;
+
+    --brand: 160 60% 15%;
+    --brand-foreground: 40 43% 93%;
+
+    --sidebar: 162 26% 10%;
+    --sidebar-foreground: 40 22% 84%;
+    --sidebar-border: 160 13% 18%;
+    --sidebar-accent: 160 20% 16%;
+
+    --positive: 152 45% 50%;
+    --negative: 6 62% 56%;
+    --warning: 40 67% 54%;
+    --critical: 6 62% 56%;
+  }
+
+  /*
+   * Category chart palette. Warm and earthy on purpose — greens, amber, clay,
+   * olive — so the donut reads as part of the brand rather than a rainbow.
+   */
+  :root {
+    --chart-1: 157 42% 45%;
+    --chart-2: 40 67% 54%;
+    --chart-3: 186 38% 44%;
+    --chart-4: 20 55% 52%;
+    --chart-5: 96 30% 44%;
+    --chart-6: 220 30% 52%;
+    --chart-7: 340 33% 52%;
+    --chart-8: 48 28% 58%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply bg-background;
+    color-scheme: dark;
+  }
+
+  html:not(.dark) {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-synthesis-weight: none;
+  }
+
+  /* Keyboard focus is visible everywhere; mouse clicks stay quiet. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /*
+   * Every financial figure in the app carries this class (usually via <Money>).
+   * Tabular numerals keep amounts aligned down a column, and the tighter
+   * tracking stops JetBrains Mono from looking airy next to Inter labels.
+   */
+  .figure {
+    @apply font-mono tabular-nums tracking-tight;
+  }
+
+  /* Thin, theme-aware scrollbars for the transaction table and chat log. */
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scroll-slim::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .scroll-slim::-webkit-scrollbar-thumb {
+    @apply rounded-full border-4 border-solid border-transparent bg-border bg-clip-content;
+  }
+}

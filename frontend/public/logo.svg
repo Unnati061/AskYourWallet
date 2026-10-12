@@ -1,0 +1,12 @@
+<svg width="680" height="680" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>AskYourWallet logo</title>
+  <desc>A wallet icon in cream on a deep green rounded square background, with a small amber clasp circle and three amber dots resembling a chat typing indicator, symbolizing an AI assistant for personal finance.</desc>
+  <rect x="40" y="40" width="600" height="600" rx="140" fill="#0F3D2E"/>
+  <rect x="170" y="230" width="340" height="220" rx="24" fill="#F5F0E6"/>
+  <line x1="170" y1="290" x2="510" y2="290" stroke="#0F3D2E" stroke-width="3" stroke-opacity="0.12"/>
+  <circle cx="460" cy="340" r="26" fill="#D8A439"/>
+  <rect x="270" y="395" width="90" height="34" rx="17" fill="#0F3D2E"/>
+  <circle cx="292" cy="412" r="4" fill="#D8A439"/>
+  <circle cx="315" cy="412" r="4" fill="#D8A439"/>
+  <circle cx="338" cy="412" r="4" fill="#D8A439"/>
+</svg>

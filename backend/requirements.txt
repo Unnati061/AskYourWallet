@@ -1,0 +1,33 @@
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Database
+sqlalchemy[asyncio]==2.0.35
+greenlet==3.1.1           # required by SQLAlchemy's async bridge
+asyncpg==0.29.0           # PostgreSQL driver (Supabase / Neon)
+aiosqlite==0.20.0         # SQLite driver (zero-setup local dev + tests)
+alembic==1.13.2
+
+# Auth
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1             # pinned: passlib 1.7.4 breaks on bcrypt >= 4.1
+
+# Validation & settings
+pydantic==2.9.2
+pydantic-settings==2.5.2
+pydantic[email]==2.9.2
+email-validator==2.2.0
+python-multipart==0.0.12
+
+# CSV parsing
+pandas==2.2.3
+
+# AI
+groq==0.11.0
+
+# Testing
+pytest==8.3.3
+pytest-asyncio==0.24.0
+httpx==0.27.2
