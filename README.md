@@ -175,9 +175,9 @@ Render's standard PostgreSQL connection string to the async driver URL the appli
 1. In Render, choose **New +** → **Blueprint**, select this GitHub repository and its `main`
    branch, then apply the detected `render.yaml`. Copy the API's public URL after deployment.
    Enter `GROQ_API_KEY` only if you want live AI chat; all other features work without it.
-2. In Vercel, import this GitHub repository. Leave the root directory as the repository root. Add
+2. In Vercel, import this GitHub repository and set its root directory to `frontend`. Add
    `VITE_API_URL` with the value `https://YOUR-RENDER-API.onrender.com/api`, then deploy. The
-   checked-in `vercel.json` installs and builds the `frontend` package and preserves React routes
+   checked-in `frontend/vercel.json` preserves React routes
    on direct links.
 3. In Render's environment settings, add `FRONTEND_URL` with the exact Vercel deployment origin,
    such as `https://askyourwallet.vercel.app`, then redeploy the API. This enables browser CORS
