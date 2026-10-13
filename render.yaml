@@ -7,7 +7,7 @@ services:
     buildCommand: pip install -r backend/requirements.txt
     # Run migrations immediately before Uvicorn so a fresh database is ready
     # even on service plans where a separate pre-deploy command is unavailable.
-    startCommand: cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: cd backend && PYTHONPATH=. alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
