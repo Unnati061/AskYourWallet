@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -31,6 +32,22 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:5173"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def use_async_postgres_driver(cls, value: str) -> str:
+        """Adapt standard hosted-Postgres URLs for SQLAlchemy's async engine.
+
+        Render and other providers expose a ``postgresql://`` connection string,
+        while this app uses SQLAlchemy with asyncpg. Keeping this conversion here
+        means the provider URL can be pasted directly into its environment settings.
+        """
+        url = str(value)
+        if url.startswith("postgres://"):
+            return "postgresql+asyncpg://" + url.removeprefix("postgres://")
+        if url.startswith("postgresql://"):
+            return "postgresql+asyncpg://" + url.removeprefix("postgresql://")
+        return url
 
     @property
     def groq_enabled(self) -> bool:

@@ -167,11 +167,24 @@ there is no gradient, no glassmorphism and no "AI" glyph anywhere.
 
 ## Deployment
 
-Frontend builds to static assets (`npm run build`) and deploys to Vercel; set `VITE_API_URL` to the
-API's public URL. Backend runs on Render or Railway as
-`uvicorn app.main:app --host 0.0.0.0 --port $PORT`, with the same env vars as local plus
-`FRONTEND_URL` set to the deployed origin for CORS. Use a hosted Postgres URL there rather than
-SQLite, and run `alembic upgrade head` on release.
+The repository is ready for a Vercel frontend and Render API deployment. The included
+[`render.yaml`](render.yaml) creates the FastAPI service, a managed PostgreSQL database, runs
+migrations before each deployment, and generates the production JWT signing secret. It converts
+Render's standard PostgreSQL connection string to the async driver URL the application requires.
+
+1. In Render, choose **New +** → **Blueprint**, select this GitHub repository and its `main`
+   branch, then apply the detected `render.yaml`. Copy the API's public URL after deployment.
+   Enter `GROQ_API_KEY` only if you want live AI chat; all other features work without it.
+2. In Vercel, import this GitHub repository. Leave the root directory as the repository root. Add
+   `VITE_API_URL` with the value `https://YOUR-RENDER-API.onrender.com/api`, then deploy. The
+   checked-in `vercel.json` installs and builds the `frontend` package and preserves React routes
+   on direct links.
+3. In Render's environment settings, add `FRONTEND_URL` with the exact Vercel deployment origin,
+   such as `https://askyourwallet.vercel.app`, then redeploy the API. This enables browser CORS
+   access only from the deployed UI.
+
+Do not commit `.env` files or paste the Groq key into repository settings. The production database
+is intentionally separate from the local SQLite database.
 
 ## Not in scope
 
