@@ -12,6 +12,7 @@ from app.models.transaction import Transaction
 from app.schemas.transaction import TransactionCreate, TransactionUpdate
 from app.services.categorization.llm import categorize_merchant_with_llm
 from app.services.categorization.rules import categorize_by_rules, extract_merchant
+from app.services.categorization.ml import categorize_with_model
 
 
 async def get_transaction(
@@ -100,9 +101,10 @@ async def resolve_category(
     description: str,
     merchant: Optional[str] = None,
     explicit_category: Optional[str] = None,
+    transaction_type: str = "expense",
 ) -> str:
     """
-    Decide a transaction's category: explicit choice > keyword rules > LLM.
+    Decide category: explicit choice > rules > selective local model > LLM.
 
     An explicit user choice is always honoured, including "Other" -- otherwise a
     deliberate override would be silently reclassified on every edit.
@@ -113,6 +115,12 @@ async def resolve_category(
     matched = categorize_by_rules(description)
     if matched:
         return matched
+
+    if transaction_type == "income":
+        return "Income"
+    predicted = categorize_with_model(description)
+    if predicted:
+        return predicted
 
     # Rules missed. Ask the LLM about the cleaned merchant name rather than the
     # full statement line, which is mostly terminal ids and dates.
@@ -125,7 +133,7 @@ async def create_transaction(
 ) -> Transaction:
     """Create a transaction, auto-categorizing when the caller left it unset."""
     merchant = data.merchant or extract_merchant(data.description)
-    category = await resolve_category(data.description, merchant, data.category)
+    category = await resolve_category(data.description, merchant, data.category, data.type)
 
     db_transaction = Transaction(
         user_id=user_id,
@@ -166,7 +174,7 @@ async def update_transaction(
             update_dict["description"]
         )
         db_transaction.category = await resolve_category(
-            update_dict["description"], db_transaction.merchant, None
+            update_dict["description"], db_transaction.merchant, None, db_transaction.type
         )
 
     await db.commit()
@@ -288,12 +296,10 @@ def parse_csv_statement(file_content: bytes) -> list[dict]:
             amount_val = abs(value)
             tx_type = "expense" if value < 0 else "income"
 
-        # Rules-only during import: an LLM call per row would make a 500-row
-        # statement unusably slow. Unmatched rows land in "Other" (or "Income"
-        # for credits) and can be re-categorized individually afterwards.
-        category = categorize_by_rules(raw_desc) or "Other"
-        if tx_type == "income" and category == "Other":
-            category = "Income"
+        # Offline only during bulk import; uncertainty never triggers an LLM call.
+        category = categorize_by_rules(raw_desc)
+        if not category:
+            category = "Income" if tx_type == "income" else (categorize_with_model(raw_desc) or "Other")
 
         transactions.append({
             "date": parsed_date,

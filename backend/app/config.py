@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     GROQ_MAX_TOOL_ROUNDS: int = 5
 
     FRONTEND_URL: str = "http://localhost:5173"
+    ML_CATEGORIZATION_ENABLED: bool = True
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

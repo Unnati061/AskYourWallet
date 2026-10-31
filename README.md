@@ -18,8 +18,11 @@ UI as a per-answer trail of the lookups that produced it.
 | **Chat** | Natural-language Q&A over your data, with the tool trail behind each answer |
 | **Settings** | Account, theme, assistant availability, the canonical category list |
 
-Transactions are categorised by a keyword rules engine first; only what the rules cannot place
-falls through to the LLM, and anything still unresolved lands in `Other`.
+Transactions preserve explicit user categories, then use keyword rules, a selective offline
+trained classifier, and finally the optional LLM. Uncertain offline predictions abstain.
+CSV import uses rules and the local classifier without per-row network calls; unresolved
+expenses become `Other`. Unmatched income is categorised as `Income` and bypasses the model.
+See [model training and evaluation](backend/ml/README.md) for measured coverage and limitations.
 
 ## Tech stack
 
@@ -104,9 +107,10 @@ origin. The frontend's single variable lives in [`frontend/.env.example`](fronte
 .\backend\.venv\Scripts\python.exe -m pytest -c backend\pytest.ini
 ```
 
-64 tests covering auth and token handling, transaction CRUD and CSV import, the rules engine and its
+Tests cover auth and token handling, transaction CRUD and CSV import, the rules engine and its
 LLM fallback, budget/dashboard aggregation, and the chat tool-use loop (against a mocked provider, so
-the suite needs no API key and makes no network calls).
+the suite needs no API key and makes no network calls). Additional model tests cover abstention,
+precedence, offline import, and real predictions through create/edit/import API endpoints.
 
 Frontend checks:
 

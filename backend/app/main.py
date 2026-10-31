@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.services.categorization.ml import load_model
 from app.routers import auth, budgets, categories, chat, dashboard, transactions
 
 logging.basicConfig(
@@ -65,4 +66,5 @@ async def health():
         "status": "ok",
         "app": settings.APP_NAME,
         "ai_enabled": settings.groq_enabled,
+        "ml_enabled": settings.ML_CATEGORIZATION_ENABLED and load_model() is not None,
     }
