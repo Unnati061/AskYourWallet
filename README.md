@@ -33,6 +33,7 @@ See [model training and evaluation](backend/ml/README.md) for measured coverage 
 | Database | SQLite out of the box; PostgreSQL (Supabase / Neon free tier) by changing one env var |
 | Auth | JWT — `python-jose` + `passlib`, tokens issued by the API itself |
 | AI | Groq free tier (`openai/gpt-oss-120b`) with tool-use / function calling |
+| Transaction model | TF-IDF + Logistic Regression trained with scikit-learn; offline JSON/NumPy inference |
 | CSV import | pandas |
 
 Everything runs on free tiers. No paid API is required, and the app is fully usable with no AI key
@@ -137,6 +138,65 @@ The tools are `get_transactions`, `get_spending_by_category`, `get_budget_status
 The response carries the tool calls that ran, plus a `grounded` flag, and the UI shows both — an
 answer with no lookup behind it is labelled as such instead of being presented as fact.
 
+## Trained transaction categorisation model
+
+The integrated classifier uses **TF-IDF word unigrams and bigrams with balanced Logistic
+Regression** to categorise expense descriptions. It runs locally in the backend during manual
+transaction creation, description edits, and CSV import. It needs no API key and does not require
+payment mode, subcategory, amount, or date as model inputs.
+
+### Dataset and training
+
+Training uses the [Daily Transactions Dataset by prasad22 on Kaggle](https://www.kaggle.com/datasets/prasad22/daily-transactions-dataset).
+After duplicate removal and filtering to expenses with at least 15 examples per source category,
+2,127 of the original 2,461 records remain across 16 labels. Missing notes become empty text.
+The stratified split uses 1,275 training, 426 validation, and 426 held-out test records with
+`random_state=42`. The text encoder and classifier are fitted only on the training records;
+the validation set selects the acceptance threshold without using test labels.
+
+The shipped artifact contains vocabulary, IDF values, coefficients, and intercepts as numeric JSON.
+The API uses NumPy for inference, so running the app requires neither pickle loading nor additional
+scikit-learn/SciPy dependencies. Training dependencies are separate from runtime dependencies.
+
+### Integration and fallback behaviour
+
+The classification order is **explicit user category → keyword rules → local model → optional
+LLM fallback**. Only expenses reach the model. CSV import uses rules and local inference without
+per-row LLM requests; unresolved expenses become `Other`.
+
+Model predictions are accepted only when their confidence is at least **0.50** and their source
+label maps unambiguously to an app category. Supported mappings include Transportation → Transport,
+Health → Healthcare, Apparel → Shopping, and Beauty → Personal Care. Broad labels such as Food
+and Household abstain because they span multiple app categories. Blank text, unseen vocabulary,
+and uncertain predictions also abstain. Existing records are not automatically reclassified.
+
+### Evaluation results
+
+| Held-out test measurement | Result |
+|---|---:|
+| Accuracy before confidence/category filtering | 67.37% |
+| Macro F1 before filtering | 0.538 |
+| Predictions accepted by the model | 59 of 426 (13.85% coverage) |
+| Correct accepted predictions | 58 of 59 (98.31% accepted accuracy) |
+
+**98.31% applies only to accepted predictions, not all transactions.** Coverage is measured before
+the app's keyword rules; the model's additional coverage after rules may be lower. These results
+come from one household's records with a random split, which can share merchant patterns across
+splits. Performance on independent bank statements has not yet been measured, and model confidence
+is not a calibrated guarantee of correctness.
+
+The originally supplied model achieved a reproduced 93.19% accuracy using additional fields,
+including human-entered subcategory text. With subcategory and payment mode unavailable, its
+accuracy fell to 51.64%. The app therefore uses the retrained text-only classifier with abstention.
+
+Examples when no category is selected: `hair cut` → Personal Care; `mobile recharge` → Subscriptions.
+Set `ML_CATEGORIZATION_ENABLED=false` in `backend/.env` to disable the local classifier. Missing
+or unreadable artifacts fall back to the existing categorisation path without blocking writes.
+
+See the [model documentation](backend/ml/README.md) for all category mappings and retraining
+commands, the [training script](backend/ml/train.py), and the [evaluation results](backend/ml/evaluation.json)
+for the dataset checksum, threshold selection, and per-category metrics.
+
 ## Project structure
 
 ```
@@ -145,9 +205,10 @@ backend/
     routers/        # One module per domain: auth, transactions, budgets, dashboard, chat, categories
     models/         # SQLAlchemy ORM models + the canonical category list
     schemas/        # Pydantic request/response contracts
-    services/       # Business logic, incl. categorization/{rules,llm}.py kept deliberately separate
+    services/       # Business logic, incl. categorization/{rules,ml,llm}.py
     tools/          # Groq tool definitions and the executor that runs them against the DB
   alembic/          # Migrations
+  ml/               # Trained JSON artifact, training script, evaluation results and documentation
   tests/
   seed.py           # Demo dataset
 frontend/
@@ -160,14 +221,6 @@ frontend/
 ```
 
 Routes are code-split, so the Recharts-heavy dashboard is not in the initial bundle.
-
-## Design notes
-
-Dark-mode-first, deep forest green with a single amber accent on a warm off-white light theme. Inter
-for the interface; **JetBrains Mono with tabular numerals for every financial figure**, which is why
-all amounts render through one `Money` component rather than ad-hoc spans. Category icons are
-literal objects — a cart, a plug, a plane. Budgets are jar fills rather than progress bars, and
-there is no gradient, no glassmorphism and no "AI" glyph anywhere.
 
 ## Deployment
 
