@@ -1,5 +1,10 @@
 # AskYourWallet
 
+**[Open the live app](https://frontend-delta-cyan-rok78wslbe.vercel.app)**
+
+For a demo, click **Fill in the seeded demo account**, then **Sign in**. The first sign-in
+may take a little time while the backend starts; keep the page open and wait.
+
 A personal finance assistant you can talk to. It imports your bank statements, categorises the
 transactions, tracks per-category budgets, and answers questions about your money in plain
 English — with every figure looked up in your own ledger before it is quoted.
