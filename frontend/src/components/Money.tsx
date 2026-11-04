@@ -8,7 +8,7 @@ export interface MoneyProps {
   /** "auto" colours by sign; the rest are explicit. */
   tone?: "auto" | "default" | "positive" | "negative" | "muted" | "warning";
   size?: "xs" | "sm" | "md" | "lg" | "xl";
-  /** Abbreviate to $1.2k — for chart axes and very tight cells. */
+  /** Abbreviate to ₹1.2k — for chart axes and very tight cells. */
   compact?: boolean;
   symbol?: boolean;
   className?: string;

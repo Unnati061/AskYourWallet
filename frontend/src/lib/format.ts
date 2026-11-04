@@ -3,11 +3,10 @@ import { format, parseISO } from "date-fns";
 /**
  * Formatting helpers for money, percentages and dates.
  *
- * The MVP is single-currency by design (multi-currency is explicitly out of
- * scope), so the symbol lives here as one constant rather than being threaded
- * through every component.
+ * The MVP uses Indian rupees throughout the interface. Keeping the symbol and
+ * locale here ensures every screen presents amounts consistently.
  */
-export const CURRENCY_SYMBOL = "$";
+export const CURRENCY_SYMBOL = "₹";
 
 /** Decimal fields arrive from the API as strings; parse defensively. */
 export function toNumber(value: string | number | null | undefined): number {
@@ -16,7 +15,7 @@ export function toNumber(value: string | number | null | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-const groupedFormatter = new Intl.NumberFormat("en-US", {
+const groupedFormatter = new Intl.NumberFormat("en-IN", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
@@ -30,7 +29,7 @@ export interface MoneyFormatOptions {
   round?: boolean;
 }
 
-/** "1048.2" -> "$1,048.20". Never used for arithmetic, only for display. */
+/** "1048.2" -> "₹1,048.20". Never used for arithmetic, only for display. */
 export function formatMoney(
   value: string | number | null | undefined,
   options: MoneyFormatOptions = {},
@@ -39,7 +38,7 @@ export function formatMoney(
   const amount = toNumber(value);
   const magnitude = Math.abs(amount);
   const body = round
-    ? Math.round(magnitude).toLocaleString("en-US")
+    ? Math.round(magnitude).toLocaleString("en-IN")
     : groupedFormatter.format(magnitude);
 
   let sign = "";
@@ -49,7 +48,7 @@ export function formatMoney(
   return `${sign}${symbol ? CURRENCY_SYMBOL : ""}${body}`;
 }
 
-/** Axis ticks and dense cards: 1234 -> "$1.2k". */
+/** Axis ticks and dense cards: 1234 -> "₹1.2k". */
 export function formatCompactMoney(value: string | number | null | undefined): string {
   const amount = toNumber(value);
   const magnitude = Math.abs(amount);
